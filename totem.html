@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tótem de Entrada - LEO BERRIO BARBERO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandblue: {
+                            light: '#00D2FF',
+                            DEFAULT: '#0088FF',
+                            dark: '#0055FF'
+                        },
+                        pureblack: '#05070A',
+                        cardgray: '#0F141C',
+                        cardborder: '#1A2333'
+                    },
+                    fontFamily: { sans: ['Montserrat', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+        .blue-gradient { background: linear-gradient(135deg, #00D2FF 0%, #0055FF 100%); }
+        .blue-text-gradient {
+            background: linear-gradient(135deg, #00D2FF 0%, #0099FF 50%, #0055FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .blue-glow { box-shadow: 0 0 35px rgba(0, 153, 255, 0.4); }
+        .calling-glow { animation: pulseGlow 1s infinite alternate; }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 30px rgba(0, 210, 255, 0.4); }
+            100% { box-shadow: 0 0 70px rgba(0, 210, 255, 0.9); }
+        }
+        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-pureblack text-gray-100 min-h-screen flex flex-col justify-between p-6 overflow-x-hidden selection:bg-brandblue selection:text-white" id="main-body">
+
+    <!-- Encabezado Tótem -->
+    <header class="text-center mb-4">
+        <img src="logo.png" alt="Leo Berrio Barbero Logo" class="h-28 object-contain mx-auto drop-shadow-[0_0_20px_rgba(0,136,255,0.4)]">
+        <div class="mt-2 inline-flex items-center gap-2 bg-brandblue/10 border border-brandblue/30 px-4 py-1.5 rounded-full">
+            <span class="w-2.5 h-2.5 rounded-full bg-brandblue-light animate-ping"></span>
+            <span class="text-xs font-black tracking-widest text-brandblue-light uppercase">Punto de Registro Presencial</span>
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL: Formulario para el Cliente -->
+    <main class="max-w-lg mx-auto w-full my-auto">
+        
+        <!-- Formulario Continuo -->
+        <div id="kiosk-form-card" class="bg-cardgray p-8 rounded-3xl border-2 border-brandblue/30 blue-glow text-center">
+            <div class="w-16 h-16 bg-brandblue/10 border border-brandblue/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-user-plus text-3xl text-brandblue-light"></i>
+            </div>
+            <h2 class="text-2xl font-black mb-1 text-white">¿No tienes celular o datos?</h2>
+            <p class="text-xs text-gray-400 mb-6 font-semibold">Escribe tu nombre abajo para anotarte en la lista de espera</p>
+            
+            <form id="kiosk-form" class="flex flex-col gap-4">
+                <input 
+                    type="text" 
+                    id="client-name" 
+                    placeholder="Escribe tu Nombre..." 
+                    class="w-full bg-pureblack text-white font-black rounded-2xl px-6 py-5 border-2 border-cardborder focus:outline-none focus:border-brandblue text-center text-2xl placeholder-gray-600 transition-all shadow-inner" 
+                    required 
+                    autocomplete="off"
+                >
+                <button type="submit" id="btn-submit" class="blue-gradient hover:opacity-95 text-white font-black px-6 py-5 rounded-2xl shadow-xl active:scale-95 transition-all text-xl tracking-wide uppercase flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-ticket text-2xl"></i>
+                    <span>TOMAR MI TURNO</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- MODAL DE CONFIRMACIÓN (Aparece 5 segundos y se oculta solo) -->
+        <div id="modal-confirm" class="fixed inset-0 bg-pureblack/90 backdrop-blur-md flex items-center justify-center p-6 hidden z-50">
+            <div class="bg-cardgray border-2 border-brandblue-light rounded-3xl p-8 max-w-sm w-full text-center pop-in blue-glow">
+                <div class="w-16 h-16 bg-green-500/20 border-2 border-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-check text-3xl text-green-400"></i>
+                </div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">¡Turno Registrado!</p>
+                <h3 class="text-3xl font-black text-white capitalize my-2 blue-text-gradient" id="modal-client-name">...</h3>
+                
+                <div class="my-4 py-4 px-6 bg-pureblack border border-brandblue/40 rounded-2xl">
+                    <p class="text-xs font-bold text-brandblue-light uppercase tracking-widest">Eres el Puesto</p>
+                    <p class="text-6xl font-black text-white" id="modal-puesto-num">#0</p>
+                </div>
+
+                <p class="text-xs text-gray-400 mb-4">Toma asiento en la sala. La pantalla anunciará tu turno con sonido.</p>
+                
+                <div class="bg-brandblue/10 border border-brandblue/20 py-2 px-4 rounded-xl">
+                    <p class="text-[11px] font-bold text-brandblue-light">Siguiente registro en <span id="timer-countdown">5</span>s...</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- OVERLAY GIGANTE DE LLAMADO GENERAL (Suena cuando el barbero llama a cualquier persona) -->
+    <div id="overlay-calling" class="fixed inset-0 bg-pureblack/95 backdrop-blur-lg flex flex-col items-center justify-center p-6 hidden z-50 text-center">
+        <div class="max-w-md w-full bg-cardgray border-4 border-brandblue p-8 rounded-3xl calling-glow pop-in">
+            <i class="fa-solid fa-bell text-8xl text-brandblue-light mb-6 animate-bounce"></i>
+            <p class="text-sm font-black text-brandblue-light uppercase tracking-widest mb-2">¡ATENCIÓN SALA DE ESPERA!</p>
+            <h2 class="text-5xl font-black text-white capitalize mb-4 blue-text-gradient" id="calling-client-name">...</h2>
+            <div class="bg-brandblue text-black font-black text-2xl py-3 px-6 rounded-2xl uppercase tracking-wider inline-block shadow-lg mb-6">
+                Pasa a la silla del barbero
+            </div>
+            <p class="text-xs text-gray-400 font-bold">Favor presentarse de inmediato</p>
+        </div>
+    </div>
+
+    <!-- Pie de página -->
+    <footer class="text-center pt-4 border-t border-cardborder/50">
+        <p class="text-xs font-bold italic text-gray-500">"Dios me los bendiga." 🙏 — Leo Berrio Barbero</p>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMJ6SCdXlP0JKKTt2V7JO0PYESX_2X2Tg",
+            authDomain: "lb-barber.firebaseapp.com",
+            projectId: "lb-barber",
+            storageBucket: "lb-barber.firebasestorage.app",
+            messagingSenderId: "1000304893965",
+            appId: "1:1000304893965:web:4d11deba190090c08cf544"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const turnosRef = collection(db, "turnos");
+        const q = query(turnosRef, orderBy("createdAt", "asc"));
+
+        let audioCtx = null;
+        let intervalAlarma = null;
+        let countdownTimer = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        // Sonido de campana potente para el local
+        function sonarAlarmaLocal() {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                const ahora = audioCtx.currentTime;
+
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(880, ahora);
+                gain1.gain.setValueAtTime(0.6, ahora);
+                gain1.gain.exponentialRampToValueAtTime(0.001, ahora + 0.5);
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+                osc1.start(ahora);
+                osc1.stop(ahora + 0.5);
+
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1320, ahora + 0.2);
+                gain2.gain.setValueAtTime(0.7, ahora + 0.2);
+                gain2.gain.exponentialRampToValueAtTime(0.001, ahora + 0.7);
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.start(ahora + 0.2);
+                osc2.stop(ahora + 0.7);
+            } catch(e) { console.error(e); }
+        }
+
+        const kioskForm = document.getElementById('kiosk-form');
+        const inputName = document.getElementById('client-name');
+        const modalConfirm = document.getElementById('modal-confirm');
+        const modalClientName = document.getElementById('modal-client-name');
+        const modalPuestoNum = document.getElementById('modal-puesto-num');
+        const timerCountdown = document.getElementById('timer-countdown');
+
+        const overlayCalling = document.getElementById('overlay-calling');
+        const callingClientName = document.getElementById('calling-client-name');
+
+        // Registro de turnos continuo
+        kioskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = inputName.value.trim();
+            if (name) {
+                initAudio(); // Activa los permisos de audio en el navegador
+                
+                try {
+                    const docRef = await addDoc(turnosRef, { name, status: 'espera', createdAt: Date.now() });
+                    
+                    // Mostrar modal de confirmación
+                    modalClientName.textContent = name;
+                    modalConfirm.classList.remove('hidden');
+                    inputName.value = '';
+                    inputName.blur();
+
+                    // Conteo regresivo de 5 segundos para limpiar pantalla
+                    let timeLeft = 5;
+                    timerCountdown.textContent = timeLeft;
+                    
+                    if(countdownTimer) clearInterval(countdownTimer);
+                    countdownTimer = setInterval(() => {
+                        timeLeft--;
+                        timerCountdown.textContent = timeLeft;
+                        if (timeLeft <= 0) {
+                            clearInterval(countdownTimer);
+                            modalConfirm.classList.add('hidden');
+                        }
+                    }, 1000);
+
+                } catch (error) {
+                    console.error("Error al registrar en tótem:", error);
+                    alert("Error al guardar el turno. Intenta de nuevo.");
+                }
+            }
+        });
+
+        // Escuchador en vivo para la pantalla y altavoces de la barbería
+        onSnapshot(q, (snapshot) => {
+            const todos = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+            const activos = todos.filter(t => t.status === 'espera' || t.status === 'llamando');
+            const clienteLlamado = activos.find(t => t.status === 'llamando');
+
+            // Actualizar número de puesto en modal de confirmación si está abierto
+            if (activos.length > 0 && modalClientName.textContent !== '...') {
+                const ultimoRegistrado = activos.findIndex(t => t.name.toLowerCase() === modalClientName.textContent.toLowerCase());
+                if (ultimoRegistrado !== -1) {
+                    modalPuestoNum.textContent = `#${ultimoRegistrado + 1}`;
+                }
+            }
+
+            // Si el barbero presiona "Llamar" a cualquier cliente
+            if (clienteLlamado) {
+                callingClientName.textContent = clienteLlamado.name;
+                overlayCalling.classList.remove('hidden');
+
+                if (!intervalAlarma) {
+                    sonarAlarmaLocal();
+                    intervalAlarma = setInterval(() => {
+                        sonarAlarmaLocal();
+                    }, 1800);
+                }
+            } else {
+                overlayCalling.classList.add('hidden');
+                if (intervalAlarma) {
+                    clearInterval(intervalAlarma);
+                    intervalAlarma = null;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
