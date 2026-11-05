@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LEO BERRIO BARBERO - Tu Turno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandblue: {
+                            light: '#00D2FF',
+                            DEFAULT: '#0088FF',
+                            dark: '#0055FF'
+                        },
+                        pureblack: '#05070A',
+                        cardgray: '#0F141C',
+                        cardborder: '#1A2333'
+                    },
+                    fontFamily: { sans: ['Montserrat', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+        .blue-gradient { background: linear-gradient(135deg, #00D2FF 0%, #0055FF 100%); }
+        .blue-text-gradient {
+            background: linear-gradient(135deg, #00D2FF 0%, #0099FF 50%, #0055FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .blue-glow { box-shadow: 0 0 30px rgba(0, 153, 255, 0.4); }
+        .ticket-glow { box-shadow: 0 0 40px rgba(0, 210, 255, 0.25); }
+        .es-tu-turno { animation: alarma 1s infinite alternate; }
+        @keyframes alarma {
+            0% { background-color: #05070A; color: #00D2FF; }
+            100% { background-color: #0066FF; color: #FFFFFF; }
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .radar-pulse { animation: radar 2s infinite ease-out; }
+        @keyframes radar {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body class="bg-pureblack text-gray-100 min-h-screen flex flex-col transition-colors duration-300" id="main-body">
+
+    <!-- Encabezado con Logo Oficial -->
+    <header class="pt-6 pb-4 px-6 text-center border-b border-brandblue/20 bg-[#0A0D14] shadow-[0_4px_30px_rgba(0,136,255,0.1)]">
+        <div class="max-w-md mx-auto flex flex-col items-center">
+            <img src="logo.png" alt="Leo Berrio Barbero Logo" class="h-24 object-contain drop-shadow-[0_0_15px_rgba(0,136,255,0.4)]">
+        </div>
+    </header>
+
+    <main class="flex-grow flex flex-col items-center justify-center p-5 max-w-md mx-auto w-full">
+        
+        <!-- Vista 1: Formulario para anotarse -->
+        <div id="view-form" class="w-full hidden">
+            <div class="bg-cardgray p-6 rounded-3xl border border-cardborder blue-glow text-center mb-6">
+                <div class="w-12 h-12 bg-brandblue/10 border border-brandblue/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-scissors text-xl text-brandblue-light"></i>
+                </div>
+                <h2 class="text-xl font-extrabold mb-1 text-white">¿Listo para el corte?</h2>
+                <p class="text-xs text-gray-400 mb-6">Anota tu nombre para tomar turno en la fila</p>
+                
+                <form id="add-form" class="flex flex-col gap-4">
+                    <input type="text" id="client-name" placeholder="Tu nombre o apodo..." class="w-full bg-pureblack text-white font-bold rounded-2xl px-5 py-4 border border-cardborder focus:outline-none focus:border-brandblue text-center text-lg placeholder-gray-600 transition-all" required autocomplete="off">
+                    <button type="submit" id="btn-submit" class="blue-gradient text-white font-black px-6 py-4 rounded-2xl shadow-lg active:scale-95 transition-all text-lg tracking-wide uppercase flex items-center justify-center gap-2">
+                        <span>Tomar Mi Turno</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Vista 2: TICKET VIP DE ESPERA DINÁMICO -->
+        <div id="view-waiting" class="w-full hidden mb-6 pop-in">
+            <div class="bg-cardgray rounded-3xl border border-brandblue/40 ticket-glow overflow-hidden relative">
+                <div class="blue-gradient p-4 text-center text-white relative">
+                    <div class="flex justify-between items-center px-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest bg-black/30 px-3 py-1 rounded-full border border-white/20">Ticket Virtual</span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-white/80 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> En Fila
+                        </span>
+                    </div>
+                </div>
+
+                <div class="p-6 text-center relative">
+                    <div class="w-14 h-14 bg-brandblue/10 border-2 border-brandblue-light rounded-full flex items-center justify-center mx-auto mb-3 shadow-[0_0_15px_rgba(0,210,255,0.3)]">
+                        <i class="fa-solid fa-check text-2xl text-brandblue-light"></i>
+                    </div>
+
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Turno Asignado a</p>
+                    <h2 class="text-3xl font-black text-white capitalize my-1 blue-text-gradient" id="client-display-name">...</h2>
+
+                    <div class="my-6 relative py-4 px-6 bg-pureblack border border-cardborder rounded-2xl flex flex-col items-center justify-center overflow-hidden">
+                        <div class="absolute inset-0 bg-brandblue/5 radar-pulse rounded-2xl"></div>
+                        <p class="text-[11px] font-black text-brandblue-light uppercase tracking-widest mb-1 relative z-10">Tu Puesto Actual</p>
+                        <div class="flex items-baseline gap-1 relative z-10">
+                            <span class="text-3xl font-black text-brandblue-light">#</span>
+                            <span class="text-6xl font-black text-white tracking-tighter" id="queue-position">...</span>
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-1 relative z-10" id="people-ahead-text">Conectando con la fila...</p>
+                    </div>
+
+                    <div class="bg-brandblue/10 border border-brandblue/20 p-3.5 rounded-xl flex items-center gap-3 text-left mb-4">
+                        <div class="w-9 h-9 rounded-lg blue-gradient flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-volume-high text-white text-sm animate-bounce"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-white">¡No cierres esta pantalla!</p>
+                            <p class="text-[10px] text-gray-400">Tu celular titilará y vibrará cuando sea tu turno.</p>
+                        </div>
+                    </div>
+
+                    <button id="btn-cancel-turno" class="text-xs font-bold text-red-400/80 hover:text-red-400 transition-colors uppercase tracking-wider py-1">
+                        <i class="fa-solid fa-xmark mr-1"></i> Cancelar mi turno
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista 3: ¡ES TU TURNO! -->
+        <div id="view-calling" class="w-full hidden text-center py-6">
+            <i class="fa-solid fa-bell text-7xl mb-6 animate-bounce text-white"></i>
+            <h2 class="text-5xl font-black mb-3 tracking-tight">¡ES TU TURNO!</h2>
+            <p class="text-xl font-bold mb-6">Pasa de una a la silla del barbero.</p>
+            <div class="bg-black/40 backdrop-blur p-4 rounded-2xl border border-white/20 inline-block">
+                <p class="text-xs font-bold uppercase tracking-wider">Tienes 3 minutos para presentarte</p>
+            </div>
+        </div>
+
+        <!-- Perfil Barbero -->
+        <div class="w-full mb-6 bg-cardgray p-4 rounded-3xl border border-cardborder flex items-center gap-4">
+            <div class="relative">
+                <img src="barbero.jpg" alt="Leo Berrio Barbero" class="w-14 h-14 object-cover rounded-2xl border-2 border-brandblue">
+                <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-pureblack rounded-full"></span>
+            </div>
+            <div>
+                <h3 class="font-extrabold text-white text-base">Leo Berrio</h3>
+                <p class="text-xs font-semibold text-brandblue-light uppercase tracking-wider">Atendido por su dueño</p>
+            </div>
+        </div>
+
+        <!-- Lista de Precios -->
+        <div class="w-full bg-cardgray p-5 rounded-3xl border border-cardborder shadow-xl mb-6">
+            <div class="flex items-center justify-between border-b border-cardborder pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-tag text-brandblue-light"></i>
+                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-300">Lista de Precios</h3>
+                </div>
+                <span class="text-[10px] font-black bg-brandblue/10 text-brandblue-light px-2.5 py-1 rounded-lg border border-brandblue/30">2027</span>
+            </div>
+
+            <div class="space-y-2.5 text-sm">
+                <div class="flex justify-between items-center py-1 border-b border-white/5">
+                    <span class="font-bold text-gray-300">Niños</span>
+                    <span class="font-black text-brandblue-light">$15.000</span>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-white/5">
+                    <span class="font-bold text-gray-300">Adultos</span>
+                    <span class="font-black text-brandblue-light">$18.000</span>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-white/5">
+                    <span class="font-bold text-gray-300">Cerquillos</span>
+                    <span class="font-black text-brandblue-light">$4.000</span>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-white/5">
+                    <span class="font-bold text-gray-300">Cejas</span>
+                    <span class="font-black text-brandblue-light">$3.000</span>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-white/5">
+                    <span class="font-bold text-gray-300">Líneas</span>
+                    <span class="font-black text-brandblue-light">$2.000</span>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-white/5">
+                    <span class="font-bold text-gray-300">Corte + Cejas</span>
+                    <span class="font-black text-brandblue-light">$20.000</span>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-white/5">
+                    <span class="font-bold text-gray-300">Corte + Barba + Cejas</span>
+                    <span class="font-black text-brandblue-light">$24.000</span>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-cardborder text-center">
+                <span class="text-xs font-black text-red-500 uppercase tracking-widest bg-red-500/10 px-4 py-1.5 rounded-xl border border-red-500/20">
+                    🚫 NO SE FÍA
+                </span>
+            </div>
+        </div>
+
+        <!-- Galería de Estilos Destacados -->
+        <div class="w-full mb-6">
+            <h3 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-fire text-brandblue-light"></i> Estilos y Cortes
+            </h3>
+            <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                <div class="min-w-[200px] bg-cardgray rounded-2xl overflow-hidden border border-cardborder shadow-lg">
+                    <img src="corte1.jpg" alt="Corte Texturizado" class="w-full h-48 object-cover">
+                    <div class="p-3 text-center">
+                        <p class="text-xs font-bold text-gray-200">Rizos & Fade</p>
+                    </div>
+                </div>
+                <div class="min-w-[200px] bg-cardgray rounded-2xl overflow-hidden border border-cardborder shadow-lg">
+                    <img src="corte2.jpg" alt="Diseño Freestyle" class="w-full h-48 object-cover">
+                    <div class="p-3 text-center">
+                        <p class="text-xs font-bold text-gray-200">Freestyle & Diseño</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Horario y Local -->
+        <div class="w-full bg-cardgray rounded-3xl border border-cardborder shadow-xl overflow-hidden mb-6">
+            <div class="relative h-36 w-full">
+                <img src="local.jpg" alt="Fachada Barbería" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-cardgray via-cardgray/60 to-transparent"></div>
+                <div class="absolute bottom-3 left-5 right-5 flex justify-between items-end">
+                    <span class="bg-brandblue/20 backdrop-blur border border-brandblue/40 text-brandblue-light text-[10px] font-black px-3 py-1 rounded-xl uppercase tracking-wider">
+                        Atención Presencial
+                    </span>
+                </div>
+            </div>
+
+            <div class="p-5">
+                <div class="flex items-center justify-center gap-2 mb-4 border-b border-cardborder pb-3">
+                    <i class="fa-solid fa-clock text-brandblue-light"></i>
+                    <h3 class="text-xs font-black uppercase tracking-widest text-gray-300">Horario de Atención</h3>
+                </div>
+                
+                <div class="space-y-3 text-center text-sm">
+                    <div>
+                        <p class="font-extrabold text-brandblue-light">De lunes a sábado</p>
+                        <p class="text-xs text-gray-300 font-semibold">De 8:30 am a 7:30 pm</p>
+                    </div>
+                    <div class="bg-pureblack/50 py-2 rounded-xl border border-red-500/20">
+                        <p class="font-extrabold text-red-400">Martes</p>
+                        <p class="text-xs text-red-300/80 font-bold">( No hay servicio )</p>
+                    </div>
+                    <div>
+                        <p class="font-extrabold text-brandblue-light">Domingos y festivos</p>
+                        <p class="text-xs text-gray-300 font-semibold">De 9:00 am a 5:00 pm</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-cardborder text-center">
+                    <p class="text-xs font-bold italic text-gray-400">"Dios me los bendiga." 🙏</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMJ6SCdXlP0JKKTt2V7JO0PYESX_2X2Tg",
+            authDomain: "lb-barber.firebaseapp.com",
+            projectId: "lb-barber",
+            storageBucket: "lb-barber.firebasestorage.app",
+            messagingSenderId: "1000304893965",
+            appId: "1:1000304893965:web:4d11deba190090c08cf544"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const turnosRef = collection(db, "turnos");
+        const q = query(turnosRef, orderBy("createdAt", "asc"));
+
+        let miTurnoId = localStorage.getItem('lbMiTurno');
+        let intervalVibracion;
+
+        const vForm = document.getElementById('view-form');
+        const vWait = document.getElementById('view-waiting');
+        const vCall = document.getElementById('view-calling');
+        const body = document.getElementById('main-body');
+        const inputName = document.getElementById('client-name');
+        const submitBtn = document.getElementById('btn-submit');
+        const btnCancel = document.getElementById('btn-cancel-turno');
+
+        document.getElementById('add-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = inputName.value.trim();
+            if (name) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i><span>GENERANDO TICKET...</span>';
+
+                if(navigator.vibrate) navigator.vibrate(50); 
+                
+                try {
+                    const docRef = await addDoc(turnosRef, { name, status: 'espera', createdAt: Date.now() });
+                    localStorage.setItem('lbMiTurno', docRef.id);
+                    miTurnoId = docRef.id;
+
+                    // Cambiar a la vista del Ticket DE INMEDIATO
+                    document.getElementById('client-display-name').textContent = name;
+                    vForm.classList.add('hidden');
+                    vWait.classList.remove('hidden');
+
+                    inputName.value = '';
+                    inputName.blur();
+                } catch (error) {
+                    console.error("Error al registrar turno:", error);
+                    alert("Ocurrió un error al tomar el turno. Intenta nuevamente.");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    submitBtn.innerHTML = '<span>Tomar Mi Turno</span>';
+                }
+            }
+        });
+
+        // Cancelar turno voluntariamente marca como 'cancelado' en Firebase
+        btnCancel.addEventListener('click', async () => {
+            if(confirm('¿Deseas salir de la fila y cancelar tu turno?')) {
+                if(miTurnoId) {
+                    try {
+                        await updateDoc(doc(db, "turnos", miTurnoId), { status: 'cancelado' });
+                    } catch(err) { console.error(err); }
+                }
+                localStorage.removeItem('lbMiTurno');
+                miTurnoId = null;
+                if(intervalVibracion) clearInterval(intervalVibracion);
+                body.classList.remove('es-tu-turno');
+                vWait.classList.add('hidden');
+                vCall.classList.add('hidden');
+                vForm.classList.remove('hidden');
+            }
+        });
+
+        onSnapshot(q, (snapshot) => {
+            const todos = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+            const activos = todos.filter(t => t.status === 'espera' || t.status === 'llamando');
+            
+            if (!miTurnoId) {
+                vForm.classList.remove('hidden'); 
+                vWait.classList.add('hidden'); 
+                vCall.classList.add('hidden');
+                return;
+            }
+
+            const miTurnoData = todos.find(t => t.id === miTurnoId);
+
+            // Si el turno ya fue atendido, ausente o cancelado por cualquier vía
+            if (!miTurnoData || (miTurnoData.status !== 'espera' && miTurnoData.status !== 'llamando')) {
+                localStorage.removeItem('lbMiTurno');
+                miTurnoId = null;
+                if(intervalVibracion) clearInterval(intervalVibracion);
+                body.classList.remove('es-tu-turno');
+                vWait.classList.add('hidden');
+                vCall.classList.add('hidden');
+                vForm.classList.remove('hidden');
+                return;
+            }
+
+            const miPuestoIndex = activos.findIndex(t => t.id === miTurnoId);
+
+            if (miTurnoData.status === 'llamando') {
+                vForm.classList.add('hidden'); 
+                vWait.classList.add('hidden'); 
+                vCall.classList.remove('hidden');
+                body.classList.add('es-tu-turno');
+                if(!intervalVibracion) {
+                    intervalVibracion = setInterval(() => { if(navigator.vibrate) navigator.vibrate([1000, 500, 1000]); }, 2500);
+                }
+            } else if (miTurnoData.status === 'espera') {
+                vForm.classList.add('hidden'); 
+                vWait.classList.remove('hidden'); 
+                vCall.classList.add('hidden');
+                
+                document.getElementById('client-display-name').textContent = miTurnoData.name;
+                const puestoReal = miPuestoIndex + 1;
+                document.getElementById('queue-position').textContent = puestoReal > 0 ? puestoReal : '1';
+                
+                const delante = miPuestoIndex;
+                const textDelante = document.getElementById('people-ahead-text');
+                if (delante <= 0) {
+                    textDelante.innerHTML = '🔥 <span class="text-green-400 font-bold">¡Eres el siguiente en pasar!</span>';
+                } else if (delante === 1) {
+                    textDelante.textContent = 'Hay 1 persona delante de ti';
+                } else {
+                    textDelante.textContent = `Hay ${delante} personas delante de ti`;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
