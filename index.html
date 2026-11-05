@@ -121,8 +121,8 @@
                             <i class="fa-solid fa-volume-high text-white text-sm animate-bounce"></i>
                         </div>
                         <div>
-                            <p class="text-xs font-bold text-white">¡No cierres esta pantalla!</p>
-                            <p class="text-[10px] text-gray-400">Tu celular titilará y vibrará cuando sea tu turno.</p>
+                            <p class="text-xs font-bold text-white">¡Sonido & Vibración Activos!</p>
+                            <p class="text-[10px] text-gray-400">Tu celular emitirá una alarma cuando el barbero te llame.</p>
                         </div>
                     </div>
 
@@ -284,7 +284,54 @@
         const q = query(turnosRef, orderBy("createdAt", "asc"));
 
         let miTurnoId = localStorage.getItem('lbMiTurno');
-        let intervalVibracion;
+        let intervalAlarma;
+        let audioCtx = null;
+
+        // Inicializar sintetizador Web Audio API al presionar botón (desbloquea autoplay en móviles)
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Sintetizador de alarma sonora (Tono de doble campana penetrante)
+        function reproducirSonidoAlarma() {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+
+                const ahora = audioCtx.currentTime;
+
+                // Tono 1 (Agudo)
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(880, ahora); // Nota A5
+                gain1.gain.setValueAtTime(0.4, ahora);
+                gain1.gain.exponentialRampToValueAtTime(0.001, ahora + 0.35);
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+                osc1.start(ahora);
+                osc1.stop(ahora + 0.35);
+
+                // Tono 2 (Más agudo - 150ms después)
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1320, ahora + 0.15); // Nota E6
+                gain2.gain.setValueAtTime(0.5, ahora + 0.15);
+                gain2.gain.exponentialRampToValueAtTime(0.001, ahora + 0.5);
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.start(ahora + 0.15);
+                osc2.stop(ahora + 0.5);
+            } catch(e) {
+                console.error("Audio error:", e);
+            }
+        }
 
         const vForm = document.getElementById('view-form');
         const vWait = document.getElementById('view-waiting');
@@ -298,18 +345,19 @@
             e.preventDefault();
             const name = inputName.value.trim();
             if (name) {
+                // Desbloqueo de sonido y vibración por interacción directa del usuario
+                initAudio();
+                if(navigator.vibrate) navigator.vibrate(50); 
+
                 submitBtn.disabled = true;
                 submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 submitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i><span>GENERANDO TICKET...</span>';
 
-                if(navigator.vibrate) navigator.vibrate(50); 
-                
                 try {
                     const docRef = await addDoc(turnosRef, { name, status: 'espera', createdAt: Date.now() });
                     localStorage.setItem('lbMiTurno', docRef.id);
                     miTurnoId = docRef.id;
 
-                    // Cambiar a la vista del Ticket DE INMEDIATO
                     document.getElementById('client-display-name').textContent = name;
                     vForm.classList.add('hidden');
                     vWait.classList.remove('hidden');
@@ -327,7 +375,7 @@
             }
         });
 
-        // Cancelar turno voluntariamente marca como 'cancelado' en Firebase
+        // Cancelar turno voluntariamente
         btnCancel.addEventListener('click', async () => {
             if(confirm('¿Deseas salir de la fila y cancelar tu turno?')) {
                 if(miTurnoId) {
@@ -337,7 +385,7 @@
                 }
                 localStorage.removeItem('lbMiTurno');
                 miTurnoId = null;
-                if(intervalVibracion) clearInterval(intervalVibracion);
+                if(intervalAlarma) clearInterval(intervalAlarma);
                 body.classList.remove('es-tu-turno');
                 vWait.classList.add('hidden');
                 vCall.classList.add('hidden');
@@ -358,11 +406,10 @@
 
             const miTurnoData = todos.find(t => t.id === miTurnoId);
 
-            // Si el turno ya fue atendido, ausente o cancelado por cualquier vía
             if (!miTurnoData || (miTurnoData.status !== 'espera' && miTurnoData.status !== 'llamando')) {
                 localStorage.removeItem('lbMiTurno');
                 miTurnoId = null;
-                if(intervalVibracion) clearInterval(intervalVibracion);
+                if(intervalAlarma) clearInterval(intervalAlarma);
                 body.classList.remove('es-tu-turno');
                 vWait.classList.add('hidden');
                 vCall.classList.add('hidden');
@@ -377,14 +424,27 @@
                 vWait.classList.add('hidden'); 
                 vCall.classList.remove('hidden');
                 body.classList.add('es-tu-turno');
-                if(!intervalVibracion) {
-                    intervalVibracion = setInterval(() => { if(navigator.vibrate) navigator.vibrate([1000, 500, 1000]); }, 2500);
+                
+                // Disparador de Alarma Sonora + Vibración repetitiva cada 1.8 segundos
+                if(!intervalAlarma) {
+                    reproducirSonidoAlarma();
+                    if(navigator.vibrate) navigator.vibrate([1000, 400, 1000]);
+
+                    intervalAlarma = setInterval(() => { 
+                        reproducirSonidoAlarma();
+                        if(navigator.vibrate) navigator.vibrate([1000, 400, 1000]); 
+                    }, 1800);
                 }
             } else if (miTurnoData.status === 'espera') {
                 vForm.classList.add('hidden'); 
                 vWait.classList.remove('hidden'); 
                 vCall.classList.add('hidden');
                 
+                if(intervalAlarma) {
+                    clearInterval(intervalAlarma);
+                    intervalAlarma = null;
+                }
+
                 document.getElementById('client-display-name').textContent = miTurnoData.name;
                 const puestoReal = miPuestoIndex + 1;
                 document.getElementById('queue-position').textContent = puestoReal > 0 ? puestoReal : '1';
